@@ -3,8 +3,8 @@ import psycopg2
 import json
 
 ## KAFKA
-consumer_group = "weather_consumer_pg"
-consumer_device = "weather_consumer002"
+consumer_group = "weather_consumer_pg02"
+consumer_device = "weather_consumer004"
 kafka_topic = "weather"
 
 consumer = kafka_cons.start_consumer(consumer_group,
@@ -12,17 +12,17 @@ consumer = kafka_cons.start_consumer(consumer_group,
                                      kafka_topic)
 ## PG
 conn=psycopg2.connect(dbname="weather_iot",
-                      user="brycemcd",
-                      host="spark3.thedevranch.net",
+                      user="weather_writer",
+                      host="psql01.thedevranch.net",
                       # NOTE: add password to pgpass
                       password="",
                       )
 cur = conn.cursor()
 
 def write_to_db(message):
-    values = json.loads(message)
 
     try:
+        values = json.loads(message)
         cur.execute(
             """INSERT INTO weather_readings (
                 light
@@ -39,10 +39,15 @@ def write_to_db(message):
              values['capture_dttm'],
              "weather001")
              )
-        conn.commit()
-    except KeyError:
-        print("message does not contain the right key")
+
+    # This is raised when a unique key contraint exception happens
+    except psycopg2.IntegrityError:
+        print("record already exists")
+    except (json.decoder.JSONDecodeError, KeyError):
+        print("message is not JSON or does not contain the right key")
         print(message)
+    conn.commit()
+    return True
 
 print ('Start consuming')
 for message in consumer:

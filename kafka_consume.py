@@ -20,9 +20,12 @@ def start_consumer(group_id, consumer_id, topic):
     topic_prefix = os.environ.get('CLOUDKARAFKA_TOPIC_PREFIX')
 
     # To consume latest messages and auto-commit offsets
-    return KafkaConsumer(topic_prefix + topic,
-            group_id=group_id,
-            client_id=consumer_id,
-            bootstrap_servers=brokers,
-            security_protocol='SSL',
-            ssl_context=ssl_context)
+    consumer = KafkaConsumer(topic_prefix + topic,
+                                group_id=group_id,
+                                client_id=consumer_id,
+                                auto_offset_reset='earliest',
+                                enable_auto_commit=False,
+                                bootstrap_servers=brokers,
+                                security_protocol='SSL',
+                                ssl_context=ssl_context)
+    return consumer
