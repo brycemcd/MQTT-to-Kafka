@@ -36,3 +36,22 @@ Read the messages on the kafka topic and push them to elasticsearch with this:
 
 To create another "sync" to send data to, create a new file and follow the pattern
 in consume_to_es.py
+
+## Monitoring
+
+`consume_to_cloudwatch.py` is a consumer of the weather data that pushes details
+of the event collection to Amazon CloudWatch. To start that consumer,
+make sure that the kafka env vars have been set in that console's
+session. Then, make sure the following env vars are set:
+
+`AWS_ACCESS_KEY_ID`
+
+`AWS_SECRET_ACCESS_KEY`
+
+Then, run the following script:
+
+`python consume_to_cloudwatch.py`
+
+Events are submitted to AMZN with the `cloudWatchPutter` user
+credentials. That user has specific permissions to put cloud watch
+metrics.

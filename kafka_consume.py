@@ -1,9 +1,10 @@
 from kafka import KafkaConsumer
 from kafka.errors import KafkaError
 import os, ssl
+import copy
 
 ## KAFKA
-def start_consumer(group_id, consumer_id, topic):
+def start_consumer(group_id, consumer_id, topic, **kwargs):
     ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH,
     cadata=os.environ.get('CLOUDKARAFKA_CA'))
 
@@ -19,13 +20,24 @@ def start_consumer(group_id, consumer_id, topic):
     brokers = os.environ.get('CLOUDKARAFKA_BROKERS').split(',')
     topic_prefix = os.environ.get('CLOUDKARAFKA_TOPIC_PREFIX')
 
+    default_config = {
+        'auto_offset_reset' : 'earliest',
+        'enable_auto_commit' : False,
+        'security_protocol' : 'SSL',
+    }
+
+    config = copy.copy(default_config)
+    for key in config:
+        if key in kwargs:
+            config[key] = kwargs.pop(key)
+
     # To consume latest messages and auto-commit offsets
     consumer = KafkaConsumer(topic_prefix + topic,
                                 group_id=group_id,
                                 client_id=consumer_id,
-                                auto_offset_reset='earliest',
-                                enable_auto_commit=False,
+                                auto_offset_reset=config['auto_offset_reset'],
+                                enable_auto_commit=config['enable_auto_commit'],
                                 bootstrap_servers=brokers,
-                                security_protocol='SSL',
+                                security_protocol=config['security_protocol'],
                                 ssl_context=ssl_context)
     return consumer
