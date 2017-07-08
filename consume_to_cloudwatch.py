@@ -26,18 +26,6 @@ def index_in_cloudwatch(event):
       Namespace='weatherIoT',
       MetricData=[
           {
-              'MetricName': 'eventCaptured',
-              'Dimensions': [
-                  {
-                      'Name': 'Device Metrics',
-                      'Value': 'nycWeather001'
-                  },
-              ],
-              'Timestamp': values['capture_dttm'],
-              'Value': 1,
-              'Unit': 'None'
-          },
-          {
               'MetricName': 'light',
               'Dimensions': [
                   {
