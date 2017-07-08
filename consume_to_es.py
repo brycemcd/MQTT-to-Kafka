@@ -12,8 +12,9 @@ consumer = kafka_cons.start_consumer(consumer_group,
 
 ## ES
 es_hosts = [
-	'http://web02.thedevranch.net',
-	'http://spark3.thedevranch.net',
+	'http://es01.thedevranch.net',
+	'http://es02.thedevranch.net',
+	'http://es03.thedevranch.net',
 ]
 
 es_index = 'doorjamb'
