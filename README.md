@@ -50,6 +50,8 @@ session. Then, make sure the following env vars are set:
 
 `AWS_SECRET_ACCESS_KEY`
 
+`AWS_DEFAULT_REGION` (us-west-2) is where they're being stored now
+
 Then, run the following script:
 
 `python consume_to_cloudwatch.py`

@@ -6,8 +6,8 @@ import boto3
 import json
 
 ## KAFKA
-consumer_group = "weather_consumer_cwTEST01"
-consumer_device = "weather_cwTEST"
+consumer_group = "weather_consumer_cw"
+consumer_device = "weather_cw"
 kafka_topic = "weather"
 
 
@@ -35,6 +35,30 @@ def index_in_cloudwatch(event):
               ],
               'Timestamp': values['capture_dttm'],
               'Value': values['light'],
+              'Unit': 'None'
+          },
+          {
+              'MetricName': 'barometric_pressure_pa',
+              'Dimensions': [
+                  {
+                      'Name': 'Device Metrics',
+                      'Value': 'nycWeather001'
+                  },
+              ],
+              'Timestamp': values['capture_dttm'],
+              'Value': values['pressure_pa'],
+              'Unit': 'None'
+          },
+          {
+              'MetricName': 'temp_from_pressure_sensor_c',
+              'Dimensions': [
+                  {
+                      'Name': 'Device Metrics',
+                      'Value': 'nycWeather001'
+                  },
+              ],
+              'Timestamp': values['capture_dttm'],
+              'Value': values['baro_temp_celcius'],
               'Unit': 'None'
           },
           {
