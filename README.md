@@ -25,7 +25,9 @@ it missed during development.
 
 My home workstation has a conda environment set up: `source activate weather`
 
-Export kafka environment variables to the shell
+Export kafka environment variables to the shell. There is a file in th
+home directory that contains all the cloudkafka params. Export those
+variables to the local shell
 
 Connect the MQTT -> Kafka bridge with this command: `python message_intercept.py`
 This will get messages pushed on the MQTT queue read and pushed on to the Kafka
