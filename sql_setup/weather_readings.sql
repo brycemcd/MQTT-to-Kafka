@@ -12,3 +12,7 @@ CREATE TABLE weather_readings (
 
 CREATE UNIQUE INDEX inx_capture_dttm_and_device
   ON weather_readings(capture_dttm, device);
+
+ALTER TABLE weather_readings ADD COLUMN pressure_pa INT NOT NULL DEFAULT -99;
+ALTER TABLE weather_readings ADD COLUMN baro_temp_celcius INT NOT NULL DEFAULT -99;
+ALTER TABLE weather_readings ALTER COLUMN heat_index TYPE NUMERIC(8, 5);

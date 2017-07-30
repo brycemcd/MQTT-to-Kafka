@@ -30,13 +30,17 @@ def write_to_db(message):
                 , temp_celcius
                 , heat_index
                 , capture_dttm
+                , pressure_pa
+                , baro_temp_celcius
                 , device
-            ) VALUES (%s, %s, %s, %s, %s, %s);""",
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);""",
             (values['light'],
              values['humidity'],
              values['temp_celcius'],
              values['heat_index'],
              values['capture_dttm'],
+             values['pressure_pa'],
+             values['baro_temp_celcius'],
              "weather001")
              )
 
@@ -51,8 +55,8 @@ def write_to_db(message):
 
 print ('Start consuming')
 for message in consumer:
-    write_to_db(message.value.decode('utf-8'))
     print(message.value.decode('utf-8'))
+    write_to_db(message.value.decode('utf-8'))
 
 cur.close()
 conn.close()
