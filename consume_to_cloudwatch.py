@@ -25,6 +25,10 @@ metric_names = [
     "light",
     "pressure_pa",
     "temp_celcius",
+    "mq135",
+    "mq5",
+    "mq6",
+    "mq9",
 ]
 
 def make_metrics(values):
@@ -45,7 +49,6 @@ def make_metrics(values):
                   "Value": values[metric],
                   "Unit": "None"
               })
-  # print(metrics)
   return metrics
 
 def index_in_cloudwatch(event):

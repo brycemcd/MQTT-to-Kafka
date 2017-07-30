@@ -32,8 +32,12 @@ def write_to_db(message):
                 , capture_dttm
                 , pressure_pa
                 , baro_temp_celcius
+                , mq135
+                , mq5
+                , mq6
+                , mq9
                 , device
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);""",
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
             (values['light'],
              values['humidity'],
              values['temp_celcius'],
@@ -41,6 +45,10 @@ def write_to_db(message):
              values['capture_dttm'],
              values['pressure_pa'],
              values['baro_temp_celcius'],
+             values['mq135'],
+             values['mq5'],
+             values['mq6'],
+             values['mq9'],
              "weather001")
              )
 

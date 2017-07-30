@@ -16,3 +16,9 @@ CREATE UNIQUE INDEX inx_capture_dttm_and_device
 ALTER TABLE weather_readings ADD COLUMN pressure_pa INT NOT NULL DEFAULT -99;
 ALTER TABLE weather_readings ADD COLUMN baro_temp_celcius INT NOT NULL DEFAULT -99;
 ALTER TABLE weather_readings ALTER COLUMN heat_index TYPE NUMERIC(8, 5);
+
+-- 2017-07-30
+ALTER TABLE weather_readings ADD COLUMN mq135 INT NOT NULL DEFAULT -99;
+ALTER TABLE weather_readings ADD COLUMN mq5 INT NOT NULL DEFAULT -99;
+ALTER TABLE weather_readings ADD COLUMN mq6 INT NOT NULL DEFAULT -99;
+ALTER TABLE weather_readings ADD COLUMN mq9 INT NOT NULL DEFAULT -99;
