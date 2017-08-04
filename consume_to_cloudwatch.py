@@ -31,12 +31,24 @@ metric_names = [
     "mq9",
 ]
 
+def valid_metric(metric_name, value):
+    """Validates that a metric is within reasonable, reportable parameters.
+    Returns True if valid (default) and false if any validity constraints are
+    violated. A very hacky, first effort, implementation"""
+
+    # by default, all metrics less than 0 are considered invalid values
+    if value < 0 :
+        return False
+
+    if "mq" in metric_name and value > 1000 :
+        return False
+
+    return True
+
 def make_metrics(values):
   metrics = []
   for metric in metric_names:
-      # print("metric: %s %s %s" % (values[metric], (values[metric] < 0), metric))
-      # NOTE values less that 0 are error values of various sorts
-      if (values[metric] > 0):
+      if valid_metric(metric, values[metric]) :
           metrics.append({
                   "MetricName": metric,
                   "Dimensions": [
@@ -70,5 +82,5 @@ def index_in_cloudwatch(event):
 
 print ("Starting consumer")
 for message in consumer:
- print(message.value.decode("utf-8"))
- index_in_cloudwatch(message.value.decode("utf-8"))
+  print(message.value.decode("utf-8"))
+  index_in_cloudwatch(message.value.decode("utf-8"))
