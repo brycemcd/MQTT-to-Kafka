@@ -1,25 +1,25 @@
-import kafka_consume as kafka_cons
-from kafka import KafkaConsumer
-from kafka.errors import KafkaError
-import os, ssl
-import boto3
+"""Reads values coming in off the kafka queue and pushes them to Cloudwatch for
+as a first effort in graphing"""
+
 import json
+import boto3
+import kafka_consume as kafka_cons
 
 ## KAFKA
-consumer_group = "weather_consumer_cw"
-consumer_device = "weather_cw"
-kafka_topic = "weather"
+CONSUMER_GROUP = "weather_consumer_cw"
+CONSUMER_DEVICE = "weather_cw"
+KAFKA_TOPIC = "weather"
 
 
-consumer = kafka_cons.start_consumer(consumer_group,
-                                     consumer_device,
-                                     kafka_topic,
+CONSUMER = kafka_cons.start_consumer(CONSUMER_GROUP,
+                                     CONSUMER_DEVICE,
+                                     KAFKA_TOPIC,
                                      # NOTE: do not fill CloudWatch with old
                                      # alerts. Just do current
                                      auto_offset_reset="latest",
-                                     )
+                                    )
 
-metric_names = [
+METRIC_NAMES = [
     "baro_temp_celcius",
     "humidity",
     "light",
@@ -37,50 +37,57 @@ def valid_metric(metric_name, value):
     violated. A very hacky, first effort, implementation"""
 
     # by default, all metrics less than 0 are considered invalid values
-    if value < 0 :
+    if value < 0:
         return False
 
-    if "mq" in metric_name and value > 1000 :
+    if "mq" in metric_name and value > 1000:
         return False
 
     return True
 
 def make_metrics(values):
-  metrics = []
-  for metric in metric_names:
-      if valid_metric(metric, values[metric]) :
-          metrics.append({
-                  "MetricName": metric,
-                  "Dimensions": [
-                      {
-                          "Name": "Device Metrics",
-                          "Value": "nycWeather001"
-                      },
-                  ],
-                  "Timestamp": values["capture_dttm"],
-                  "Value": values[metric],
-                  "Unit": "None"
-              })
-  return metrics
+    """Creates a list of metrics to push to Cloudwatch"""
+
+    metrics = []
+    for metric in METRIC_NAMES:
+        if valid_metric(metric, values[metric]):
+            metrics.append({
+                "MetricName": metric,
+                "Dimensions": [
+                    {
+                        "Name": "Device Metrics",
+                        "Value": "nycWeather001"
+                        },
+                    ],
+                "Timestamp": values["capture_dttm"],
+                "Value": values[metric],
+                "Unit": "None"
+                })
+    return metrics
 
 def index_in_cloudwatch(event):
-  values = json.loads(event)
-  client = boto3.client("cloudwatch")
+    """Main event processor. Reads message off of Kafka queue, makes calls to
+    check the validity of the values of the message (wrt Cloudwatch), creates
+    metrics and pushes them to Cloudwatch"""
 
-  metrics = make_metrics(values)
-  response = client.put_metric_data(
-      Namespace = "weatherIoT",
-      MetricData = metrics
-  )
-  print("Request: %s" % json.dumps(metrics))
-  print("Response: %s" % response)
-  # make_metrics(values)
-  # print()
-  # print("---")
-  if not (response["ResponseMetadata"]["HTTPStatusCode"] == 200):
-      index_in_cloudwatch(event)
+    values = json.loads(event)
+    client = boto3.client("cloudwatch")
 
-print ("Starting consumer")
-for message in consumer:
-  print(message.value.decode("utf-8"))
-  index_in_cloudwatch(message.value.decode("utf-8"))
+    metrics = make_metrics(values)
+    response = client.put_metric_data(
+        Namespace="weatherIoT",
+        MetricData=metrics
+    )
+    print("Request: %s" % json.dumps(metrics))
+    print("Response: %s" % response)
+    # make_metrics(values)
+    # print()
+    # print("---")
+    if not response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+        index_in_cloudwatch(event)
+
+if __name__ == '__main__':
+    print("Starting consumer")
+    for message in CONSUMER:
+        print(message.value.decode("utf-8"))
+        index_in_cloudwatch(message.value.decode("utf-8"))
