@@ -1,23 +1,10 @@
 import kafka_consume as kafka_cons
+from kafka.errors import KafkaError, NoBrokersAvailable
 import psycopg2
 import json
+import os
+import time
 
-## KAFKA
-consumer_group = "weather_consumer_pg02"
-consumer_device = "weather_consumer004"
-kafka_topic = "weather"
-
-consumer = kafka_cons.start_consumer(consumer_group,
-                                     consumer_device,
-                                     kafka_topic)
-## PG
-conn=psycopg2.connect(dbname="weather_iot",
-                      user="weather_writer",
-                      host="psql01.thedevranch.net",
-                      # NOTE: add password to pgpass
-                      password="",
-                      )
-cur = conn.cursor()
 
 def write_to_db(message):
 
@@ -61,10 +48,39 @@ def write_to_db(message):
     conn.commit()
     return True
 
-print ('Start consuming')
-for message in consumer:
-    print(message.value.decode('utf-8'))
-    write_to_db(message.value.decode('utf-8'))
+if __name__ == '__main__':
+    attempts = 0
+    max_attempts = os.environ.get('MAX_CONNECTION_RETRIES', 10)
 
-cur.close()
-conn.close()
+    while(attempts < int(max_attempts)):
+        try:
+            ## PG
+            # FIXME: these should be env vars
+            conn=psycopg2.connect(dbname="weather_iot",
+                                  user="weather_writer",
+                                  # NOTE: add password to pgpass
+                                  host="psql02.thedevranch.net",
+                                  password=os.environ.get('POSTGRES_PASSWD'),
+                                  )
+            cur = conn.cursor()
+
+            ## KAFKA
+            consumer_group = "weather_consumer_pg02"
+            consumer_device = "weather_consumer004"
+            kafka_topic = "weather"
+
+            consumer = kafka_cons.start_consumer(consumer_group,
+                                                 consumer_device,
+                                                 kafka_topic)
+            print ('Start consuming')
+            for message in consumer:
+                print(message.value.decode('utf-8'))
+                write_to_db(message.value.decode('utf-8'))
+
+            cur.close()
+            conn.close()
+
+        except NoBrokersAvailable:
+            print("No Brokers. Attempt %s" % attempts)
+            attempts = attempts + 1
+            time.sleep(2)

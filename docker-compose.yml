@@ -1,0 +1,64 @@
+# NOTE: a .env file is required to run this:
+# https://docs.docker.com/compose/env-file/
+# This file houses env vars common to all services defined in this file
+
+version: '2'
+services:
+  # this is necessary if I want to host my own Kafka.
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+    restart: unless-stopped
+    #logging:
+        #driver: syslog
+        #options:
+            #syslog-address: "${PAPERTRAIL_DESTINATION}"
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_ADVERTISED_HOST_NAME
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CREATE_TOPICS=weather:1:1
+    depends_on:
+      - zookeeper
+    restart: unless-stopped
+    #logging:
+        #driver: syslog
+        #options:
+            #syslog-address: "${PAPERTRAIL_DESTINATION}"
+
+  consume_to_pg:
+    build: .
+    command: ["python", "consume_to_pg.py"]
+    environment:
+      - POSTGRES_PASSWD
+      - KAFKA_ADVERTISED_HOST_NAME
+    depends_on:
+      - kafka
+      - message_intercept
+    restart: unless-stopped
+
+  consume_to_cloudwatch:
+    build: .
+    command: ["python", "consume_to_cloudwatch.py"]
+    environment:
+      - AWS_DEFAULT_REGION
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_ACCESS_KEY_ID
+      - KAFKA_ADVERTISED_HOST_NAME
+    depends_on:
+      - kafka
+      - message_intercept
+    restart: unless-stopped
+
+  message_intercept:
+    build: .
+    command: ["python", "message_intercept.py"]
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_ADVERTISED_HOST_NAME
+    restart: unless-stopped

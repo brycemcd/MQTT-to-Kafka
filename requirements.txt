@@ -1,0 +1,4 @@
+kafka
+paho-mqtt
+psycopg2
+boto3

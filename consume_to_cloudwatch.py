@@ -1,23 +1,14 @@
-"""Reads values coming in off the kafka queue and pushes them to Cloudwatch for
-as a first effort in graphing"""
+"""
+Reads values coming in off the kafka queue and pushes them to Cloudwatch for
+as a first effort in graphing
+"""
 
 import json
 import boto3
+from kafka.errors import KafkaError, NoBrokersAvailable
 import kafka_consume as kafka_cons
-
-## KAFKA
-CONSUMER_GROUP = "weather_consumer_cw"
-CONSUMER_DEVICE = "weather_cw"
-KAFKA_TOPIC = "weather"
-
-
-CONSUMER = kafka_cons.start_consumer(CONSUMER_GROUP,
-                                     CONSUMER_DEVICE,
-                                     KAFKA_TOPIC,
-                                     # NOTE: do not fill CloudWatch with old
-                                     # alerts. Just do current
-                                     auto_offset_reset="latest",
-                                    )
+import os
+import time
 
 METRIC_NAMES = [
     "baro_temp_celcius",
@@ -87,7 +78,29 @@ def index_in_cloudwatch(event):
         index_in_cloudwatch(event)
 
 if __name__ == '__main__':
-    print("Starting consumer")
-    for message in CONSUMER:
-        print(message.value.decode("utf-8"))
-        index_in_cloudwatch(message.value.decode("utf-8"))
+    attempts = 0
+    max_attempts = os.environ.get('MAX_CONNECTION_RETRIES', 10)
+
+    while(attempts < int(max_attempts)):
+        try:
+            consumer_group = "weather_consumer_cw"
+            consumer_device = "weather_consumer_cw_001"
+            kafka_topic = "weather"
+
+            consumer = kafka_cons.start_consumer(consumer_group,
+                                                 consumer_device,
+                                                 kafka_topic,
+                                                 # this will start consuming at
+                                                 # the most recent. If offline,
+                                                 # old messages will not be
+                                                 # consumed
+                                                 auto_offset_reset='latest')
+            print("Starting consumer")
+            for message in consumer:
+                print(message.value.decode("utf-8"))
+                index_in_cloudwatch(message.value.decode("utf-8"))
+
+        except NoBrokersAvailable:
+            print("No Brokers. Attempt %s" % attempts)
+            attempts = attempts + 1
+            time.sleep(2)

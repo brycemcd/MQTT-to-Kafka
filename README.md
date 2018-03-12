@@ -23,15 +23,23 @@ it missed during development.
 
 ## How to start
 
-My home workstation has a conda environment set up: `source activate weather`
+NOTE: this is deployed via the `weather-messaging` project in my
+home-datacenter-ansible project.
 
-Export kafka environment variables to the shell. There is a file in th
-home directory that contains all the cloudkafka params. Export those
-variables to the local shell
+### Env Vars
+
+Populate .env in the root directory. Copy from the sample env.sample
+file for a list of required keys.
+
+## Consumers/Producers
+
+### MQTT -> Kafka Bridge
 
 Connect the MQTT -> Kafka bridge with this command: `python message_intercept.py`
 This will get messages pushed on the MQTT queue read and pushed on to the Kafka
 broker.
+
+### Elasticsearch
 
 Read the messages on the kafka topic and push them to elasticsearch with this:
 `python consume_to_es.py`
@@ -39,7 +47,7 @@ Read the messages on the kafka topic and push them to elasticsearch with this:
 To create another "sync" to send data to, create a new file and follow the pattern
 in consume_to_es.py
 
-## Monitoring
+### Cloudwatch
 
 `consume_to_cloudwatch.py` is a consumer of the weather data that pushes details
 of the event collection to Amazon CloudWatch. To start that consumer,
