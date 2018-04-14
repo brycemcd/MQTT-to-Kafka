@@ -30,6 +30,11 @@ services:
         #options:
             #syslog-address: "${PAPERTRAIL_DESTINATION}"
 
+  mqtt:
+    image: toke/mosquitto
+    ports:
+      - "1883:1883"
+
   consume_to_pg:
     build: .
     command: ["python", "consume_to_pg.py"]
