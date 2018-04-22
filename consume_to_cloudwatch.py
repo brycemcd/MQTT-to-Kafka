@@ -56,6 +56,7 @@ def make_metrics(values):
                 })
     return metrics
 
+
 def index_in_cloudwatch(event):
     """Main event processor. Reads message off of Kafka queue, makes calls to
     check the validity of the values of the message (wrt Cloudwatch), creates
@@ -77,6 +78,7 @@ def index_in_cloudwatch(event):
     if not response["ResponseMetadata"]["HTTPStatusCode"] == 200:
         index_in_cloudwatch(event)
 
+
 if __name__ == '__main__':
     attempts = 0
     max_attempts = os.environ.get('MAX_CONNECTION_RETRIES', 10)
@@ -84,7 +86,8 @@ if __name__ == '__main__':
     while(attempts < int(max_attempts)):
         try:
             consumer_group = "weather_consumer_cw"
-            consumer_device = "weather_consumer_cw_001"
+            consumer_device = "weather_consumer_cw_%s" % os.getenv("HOSTNAME",
+                                                                   "001")
             kafka_topic = "weather"
 
             consumer = kafka_cons.start_consumer(consumer_group,

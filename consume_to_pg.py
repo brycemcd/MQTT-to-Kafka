@@ -48,31 +48,32 @@ def write_to_db(message):
     conn.commit()
     return True
 
+
 if __name__ == '__main__':
     attempts = 0
     max_attempts = os.environ.get('MAX_CONNECTION_RETRIES', 10)
 
-    while(attempts < int(max_attempts)):
+    while attempts < int(max_attempts):
         try:
             ## PG
             # FIXME: these should be env vars
             conn=psycopg2.connect(dbname="weather_iot",
                                   user="weather_writer",
-                                  # NOTE: add password to pgpass
                                   host="psql02.thedevranch.net",
                                   password=os.environ.get('POSTGRES_PASSWD'),
                                   )
             cur = conn.cursor()
 
             ## KAFKA
-            consumer_group = "weather_consumer_pg02"
-            consumer_device = "weather_consumer004"
+            consumer_group = "weather_consumer_pg"
+            consumer_device = "weather_consumer_pg_%s" % os.getenv("HOSTNAME",
+                                                                   "001")
             kafka_topic = "weather"
 
             consumer = kafka_cons.start_consumer(consumer_group,
                                                  consumer_device,
                                                  kafka_topic)
-            print ('Start consuming')
+            print('Start consuming')
             for message in consumer:
                 print(message.value.decode('utf-8'))
                 write_to_db(message.value.decode('utf-8'))

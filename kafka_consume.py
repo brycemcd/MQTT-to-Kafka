@@ -3,11 +3,11 @@ from kafka.errors import KafkaError
 import os, ssl
 import copy
 
+
 ## KAFKA
 def start_consumer(group_id, consumer_id, topic, **kwargs):
 
-    brokers = os.environ.get('KAFKA_ADVERTISED_HOST_NAME')
-
+    brokers = os.getenv("KAFKA_HOSTS", "").split(",")
     default_config = {
         'auto_offset_reset' : 'earliest',
         'enable_auto_commit' : False,
