@@ -36,7 +36,9 @@ services:
 
   consume_to_pg:
     build: .
-    command: ["python", "consume_to_pg.py"]
+    # NOTE: adding -u unbuffers STDIN/STDOUT and makes print statements
+    # available in the logs
+    command: ["python", "-u", "consume_to_pg.py"]
     volumes:
       - ./:/app
     environment:
@@ -46,10 +48,13 @@ services:
     depends_on:
       - kafka
       - message_intercept
+    restart: unless-stopped
 
   consume_to_cloudwatch:
     build: .
-    command: ["python", "consume_to_cloudwatch.py"]
+    # NOTE: adding -u unbuffers STDIN/STDOUT and makes print statements
+    # available in the logs
+    command: ["python", "-u", "consume_to_cloudwatch.py"]
     volumes:
       - ./:/app
     environment:
@@ -61,23 +66,13 @@ services:
     depends_on:
       - kafka
       - message_intercept
-#    restart: unless-stopped
-#
-#  consume_to_cloudwatch:
-#    build: .
-#    command: ["python", "consume_to_cloudwatch.py"]
-#    environment:
-#      - AWS_DEFAULT_REGION
-#      - AWS_SECRET_ACCESS_KEY
-#      - AWS_ACCESS_KEY_ID
-#    depends_on:
-#      - kafka
-#      - message_intercept
-#    restart: unless-stopped
+    restart: unless-stopped
 
   message_intercept:
     build: .
-    command: ["python", "message_intercept.py"]
+    # NOTE: adding -u unbuffers STDIN/STDOUT and makes print statements
+    # available in the logs
+    command: ["python", "-u", "message_intercept.py"]
     volumes:
       - ./:/app
     depends_on:

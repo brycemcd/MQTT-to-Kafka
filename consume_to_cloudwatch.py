@@ -72,9 +72,7 @@ def index_in_cloudwatch(event):
     )
     print("Request: %s" % json.dumps(metrics))
     print("Response: %s" % response)
-    # make_metrics(values)
-    # print()
-    # print("---")
+
     if not response["ResponseMetadata"]["HTTPStatusCode"] == 200:
         index_in_cloudwatch(event)
 
